@@ -7,7 +7,7 @@ COPY . .
 # Build native image
 RUN ./gradlew build -Dquarkus.native.enabled=true -Dquarkus.package.jar.enabled=false
 
-# Stage 3: Quarkus micro image
+# Stage 2: Quarkus micro image
 FROM quay.io/quarkus/quarkus-micro-image:2.0
 ARG PROJECT=mastodon
 ARG VERSION=0.5.0

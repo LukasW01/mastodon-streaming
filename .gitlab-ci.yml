@@ -1,5 +1,4 @@
 stages:
-  - npm
   - gradle
   - qodana
   - docker
@@ -18,8 +17,6 @@ default:
     paths:
       - build
       - .gradle
-      - node_modules/
-      - .pnpm-store/
 
 gradle:test:
   stage: gradle
@@ -34,26 +31,6 @@ gradle:diktat:
   stage: gradle
   image: gradle:jdk21-alpine
   script: gradle diktatCheck
-
-npm:lint:
-  stage: npm
-  image: node:alpine
-  before_script:
-    - npm install -g pnpm
-    - pnpm config set store-dir .pnpm-store
-  script:
-    - pnpm i
-    - pnpm lint
-
-npm:build:
-  stage: npm
-  image: node:alpine
-  before_script:
-    - npm install -g pnpm
-    - pnpm config set store-dir .pnpm-store
-  script:
-    - pnpm i
-    - pnpm build
 
 docker_build:
   stage: docker
