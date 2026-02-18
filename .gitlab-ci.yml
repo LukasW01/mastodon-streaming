@@ -1,0 +1,85 @@
+stages:
+  - npm
+  - gradle
+  - qodana
+  - docker
+
+variables:
+  # Docker
+  DOCKER_API_VERSION: "1.44"
+  # Registry
+  REGISTRY: ghcr.io
+  # Gradle
+  GRADLE_USER_HOME: "$CI_PROJECT_PATH/gradle"
+
+default:
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    paths:
+      - build
+      - .gradle
+      - node_modules/
+      - .pnpm-store/
+
+gradle:test:
+  stage: gradle
+  image: gradle:jdk21-alpine
+  script: gradle test
+  artifacts:
+    when: always
+    reports:
+      junit: build/test-results/test/**/TEST-*.xml
+
+gradle:diktat:
+  stage: gradle
+  image: gradle:jdk21-alpine
+  script: gradle diktatCheck
+
+npm:lint:
+  stage: npm
+  image: node:alpine
+  before_script:
+    - npm install -g pnpm
+    - pnpm config set store-dir .pnpm-store
+  script:
+    - pnpm i
+    - pnpm lint
+
+npm:build:
+  stage: npm
+  image: node:alpine
+  before_script:
+    - npm install -g pnpm
+    - pnpm config set store-dir .pnpm-store
+  script:
+    - pnpm i
+    - pnpm build
+
+docker_build:
+  stage: docker
+  image: docker:cli
+  before_script:
+    - docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
+  script:
+    - docker build --pull -t "mastodon-streaming" .
+    # latest tag
+    - docker tag "mastodon-streaming" "$REGISTRY/$PROJECT_NAMESPACE/mastodon-streaming:latest"
+    - docker push "$REGISTRY/$PROJECT_NAMESPACE/mastodon-streaming:latest"
+    # version tag
+    - docker tag "mastodon-streaming" "$REGISTRY/$PROJECT_NAMESPACE/mastodon-streaming:$CI_COMMIT_TAG"
+    - docker push "$REGISTRY/$PROJECT_NAMESPACE/mastodon-streaming:$CI_COMMIT_TAG"
+  only:
+    - tags
+
+qodana:
+  stage: qodana
+  image:
+    name: jetbrains/qodana-jvm-community:latest
+    entrypoint: [""]
+  script: qodana scan
+  only:
+    - schedules
+  artifacts:
+    paths:
+      - qodana/
+
