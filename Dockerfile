@@ -18,12 +18,12 @@ WORKDIR /app
 # Copy the Quarkus runner
 COPY --from=gradle "/app/build/*-runner" "/app/mastodon"
 
-VOLUME ["/app/jwt"]
-
 RUN chown 1001 /app && chmod "g+rwX" /app && chown 1001:root /app
 
+VOLUME ["/app/jwt"]
 EXPOSE $PORT
 USER 1001
+ENV QUARKUS_PROFILE=prod
 
 # Run Quarkus app
 ENTRYPOINT ["/bin/sh", "-c"]

@@ -22,6 +22,8 @@ gradle:test:
   stage: gradle
   image: gradle:jdk21-alpine
   script: gradle test
+  variables:
+    QUARKUS_PROFILE: test
   artifacts:
     when: always
     reports:
