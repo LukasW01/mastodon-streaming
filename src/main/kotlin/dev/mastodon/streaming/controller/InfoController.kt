@@ -1,6 +1,6 @@
 package dev.mastodon.streaming.controller
 
-import dev.mastodon.streaming.dto.ErrorResponse
+import dev.mastodon.streaming.dto.InfoResponse
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.ws.rs.Consumes
 import jakarta.ws.rs.GET
@@ -16,5 +16,5 @@ import jakarta.ws.rs.core.Response
 class InfoController {
     @GET
     @Path("/health")
-    fun health(): Response = Response.status(Response.Status.OK).entity(ErrorResponse("Healthy!", Response.Status.OK.statusCode)).build()
+    fun health(): InfoResponse = InfoResponse("OK", Response.Status.OK.statusCode)
 }
