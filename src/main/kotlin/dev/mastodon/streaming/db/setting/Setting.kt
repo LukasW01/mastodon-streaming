@@ -9,7 +9,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
 
 @Entity
@@ -34,11 +33,9 @@ class Setting : PanacheEntityBase() {
     @Column(name = "value", length = Integer.MAX_VALUE)
     lateinit var value: String
 
-    @NotNull
     @Column(name = "created_at")
     lateinit var createdAt: LocalDateTime
 
-    @NotNull
     @Column(name = "updated_at")
     lateinit var updatedAt: LocalDateTime
 }

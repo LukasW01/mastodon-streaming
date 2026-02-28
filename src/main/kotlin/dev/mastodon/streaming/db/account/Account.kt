@@ -186,11 +186,9 @@ class Account : PanacheEntityBase() {
     @Column(name = "public_key", length = Integer.MAX_VALUE)
     lateinit var publicKey: String
 
-    @NotNull
     @Column(name = "created_at")
     lateinit var createdAt: LocalDateTime
 
-    @NotNull
     @Column(name = "updated_at")
     lateinit var updatedAt: LocalDateTime
 

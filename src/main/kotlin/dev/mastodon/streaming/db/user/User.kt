@@ -44,10 +44,6 @@ import java.time.LocalDateTime
             columnList = "account_id"
         ),
         Index(
-            name = "index_users_on_created_by_application_id",
-            columnList = "created_by_application_id"
-        ),
-        Index(
             name = "index_users_on_role_id",
             columnList = "role_id"
         )]
@@ -57,19 +53,6 @@ class User : PanacheEntityBase() {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     var id: Long = 0
-
-    @NotNull
-    @Column(name = "created_at")
-    var createdAt: LocalDateTime? = null
-
-    @NotNull
-    @Column(name = "updated_at")
-    var updatedAt: LocalDateTime? = null
-
-    @NotNull
-    @ColumnDefault("''")
-    @Column(name = "encrypted_password", length = Integer.MAX_VALUE)
-    var encryptedPassword: String? = null
 
     @Column(name = "reset_password_token", length = Integer.MAX_VALUE)
     var resetPasswordToken: String? = null
@@ -128,9 +111,6 @@ class User : PanacheEntityBase() {
     @Column(name = "chosen_languages")
     var chosenLanguages: List<String>? = null
 
-    @Column(name = "created_by_application_id")
-    var createdByApplicationId: Long? = null
-
     @NotNull
     @ColumnDefault("true")
     @Column(name = "approved", nullable = false)
@@ -146,7 +126,7 @@ class User : PanacheEntityBase() {
     var webauthnId: String? = null
 
     @Column(name = "sign_up_ip")
-    var signUpIp: InetAddress? = null
+    lateinit var signUpIp: InetAddress
 
     @Column(name = "skip_sign_in_token")
     var skipSignInToken: Boolean? = null
@@ -171,6 +151,17 @@ class User : PanacheEntityBase() {
     @ColumnDefault("false")
     @Column(name = "require_tos_interstitial")
     var requireTosInterstitial: Boolean? = null
+
+    @Column(name = "created_at")
+    lateinit var createdAt: LocalDateTime
+
+    @Column(name = "updated_at")
+    lateinit var updatedAt: LocalDateTime
+
+    @NotNull
+    @ColumnDefault("''")
+    @Column(name = "encrypted_password", length = Integer.MAX_VALUE)
+    lateinit var encryptedPassword: String
 
     @NotNull
     @ColumnDefault("''")

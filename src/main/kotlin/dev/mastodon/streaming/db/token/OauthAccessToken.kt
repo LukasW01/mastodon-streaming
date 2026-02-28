@@ -52,9 +52,6 @@ class OauthAccessToken : PanacheEntityBase() {
 
     @Column(name = "scopes", length = Integer.MAX_VALUE)
     var scopes: String? = null
-
-    @Column(name = "application_id")
-    var applicationId: Long? = null
     
     @NotBlank
     @Column(name = "token", length = Integer.MAX_VALUE)
