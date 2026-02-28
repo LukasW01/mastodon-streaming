@@ -125,9 +125,6 @@ class User : PanacheEntityBase() {
     @Column(name = "webauthn_id", length = Integer.MAX_VALUE)
     var webauthnId: String? = null
 
-    @Column(name = "sign_up_ip")
-    lateinit var signUpIp: InetAddress
-
     @Column(name = "skip_sign_in_token")
     var skipSignInToken: Boolean? = null
 
@@ -151,6 +148,9 @@ class User : PanacheEntityBase() {
     @ColumnDefault("false")
     @Column(name = "require_tos_interstitial")
     var requireTosInterstitial: Boolean? = null
+
+    @Column(name = "sign_up_ip")
+    lateinit var signUpIp: InetAddress
 
     @Column(name = "created_at")
     lateinit var createdAt: LocalDateTime
