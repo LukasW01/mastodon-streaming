@@ -52,7 +52,7 @@ jwt/
 .kotlin/
 
 # Postgres
-db/
+postgres/
 
 # SQlite
 *.sqlite
