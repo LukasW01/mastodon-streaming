@@ -35,9 +35,7 @@ class MastodonWebSocketController {
     
     @OnTextMessage
     @ActivateRequestContext
-    fun onMessage(message: Subscribe): String {
-        return when (enumValues<ChannelName>().find { it.name == message.stream.uppercase() }) {
-            else -> "Wrong channel!"
-        }
+    fun onMessage(message: Subscribe): String = when (enumValues<ChannelName>().find { it.name == message.stream.uppercase() }) {
+        else -> "Wrong channel!"
     }
 }
