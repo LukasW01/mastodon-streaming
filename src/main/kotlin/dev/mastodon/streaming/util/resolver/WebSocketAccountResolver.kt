@@ -6,7 +6,6 @@ import io.netty.handler.codec.http.QueryStringDecoder
 import io.quarkus.websockets.next.WebSocketConnection
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import java.sql.SQLException
 import kotlin.jvm.Throws
 
 @ApplicationScoped
@@ -33,7 +32,7 @@ class WebSocketAccountResolver {
         return header ?: accessToken ?: throw IllegalStateException("No token found")
     }
     
-    @Throws(SQLException::class)
-    fun getAccountId(token: String): AccessToken =
-        tokenService.findTokenDetailsDto(token) ?: throw SQLException("No account found")
+    @Throws(IllegalStateException::class)
+    fun getAccountId(): AccessToken =
+        tokenService.findTokenDetailsDto(this.resolveToken()) ?: throw IllegalStateException("No account found")
 }

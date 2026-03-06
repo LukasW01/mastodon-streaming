@@ -26,7 +26,7 @@ class MastodonWebSocketController {
     @ActivateRequestContext
     fun onOpen() {
         try {
-            account.getAccountId(account.resolveToken())
+            account.getAccountId()
         } catch (e: Exception) {
             Log.info("WebSocket connection error: ${e.message}")
             ws.close(CloseReason(CloseReason.NORMAL.code, "Unauthorized")).await().indefinitely()
