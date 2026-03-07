@@ -12,6 +12,7 @@ import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.ColumnDefault
 import java.net.InetAddress
@@ -158,12 +159,12 @@ class User : PanacheEntityBase() {
     @Column(name = "updated_at")
     lateinit var updatedAt: LocalDateTime
 
-    @NotNull
+    @NotBlank
     @ColumnDefault("''")
     @Column(name = "encrypted_password", length = Integer.MAX_VALUE)
     lateinit var encryptedPassword: String
 
-    @NotNull
+    @NotBlank
     @ColumnDefault("''")
     @Column(name = "email", length = Integer.MAX_VALUE)
     lateinit var email: String

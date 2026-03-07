@@ -1,0 +1,111 @@
+package dev.mastodon.streaming.util.resolver
+
+import dev.mastodon.streaming.db.token.AccessTokenService
+import dev.mastodon.streaming.dto.AccessToken
+import io.quarkus.test.junit.QuarkusTest
+import io.quarkus.websockets.next.HandshakeRequest
+import io.quarkus.websockets.next.WebSocketConnection
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.InjectMocks
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.MockitoAnnotations
+
+@QuarkusTest
+class WebSocketAccountResolverTest {
+    @Mock
+    lateinit var ws: WebSocketConnection
+
+    @Mock
+    lateinit var tokenService: AccessTokenService
+
+    @Mock
+    lateinit var handshake: HandshakeRequest
+
+    @InjectMocks
+    lateinit var resolver: WebSocketAccountResolver
+
+    @BeforeEach
+    fun init() {
+        MockitoAnnotations.openMocks(this)
+    }
+
+    @Test
+    fun `should resolve token from Authorization header`() {
+        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
+        Mockito.`when`(handshake.header("Authorization")).thenReturn("Bearer bearer-token")
+        Mockito.`when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
+        Mockito.`when`(handshake.query()).thenReturn("")
+
+        val token = resolver.resolveToken()
+        Assertions.assertEquals("bearer-token", token)
+    }
+
+    @Test
+    fun `should resolve token from Sec-WebSocket-Protocol header`() {
+        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
+        Mockito.`when`(handshake.header("Authorization")).thenReturn(null)
+        Mockito.`when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn("sec.websocket.protocol-token")
+        Mockito.`when`(handshake.query()).thenReturn("")
+
+        val token = resolver.resolveToken()
+        Assertions.assertEquals("sec.websocket.protocol-token", token)
+    }
+
+    @Test
+    fun `should resolve token from query parameter`() {
+        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
+        Mockito.`when`(handshake.header("Authorization")).thenReturn(null)
+        Mockito.`when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
+        Mockito.`when`(handshake.query()).thenReturn("access_token=query-token")
+
+        val token = resolver.resolveToken()
+        Assertions.assertEquals("query-token", token)
+    }
+
+    @Test
+    fun `should throw exception when no token exists`() {
+        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
+        Mockito.`when`(handshake.header("Authorization")).thenReturn(null)
+        Mockito.`when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
+        Mockito.`when`(handshake.query()).thenReturn("")
+
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            resolver.resolveToken()
+        }
+    }
+
+    @Test
+    fun `getAccountId should return AccessToken when service finds token`() {
+        val accessToken = AccessToken(
+            tokenId = 1,
+            resourceOwnerId = 2,
+            accountId = 3,
+            chosenLanguages = listOf("en"),
+            scopes = "scope",
+            permissions = 1
+        )
+
+        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
+        Mockito.`when`(handshake.header("Authorization")).thenReturn("Bearer token")
+        Mockito.`when`(handshake.query()).thenReturn("")
+        Mockito.`when`(tokenService.findTokenDetailsDto("token")).thenReturn(accessToken)
+
+        val result = resolver.getAccountId()
+        Assertions.assertEquals(accessToken, result)
+    }
+
+    @Test
+    fun `getAccountId should throw when token service returns null`() {
+        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
+        Mockito.`when`(handshake.header("Authorization")).thenReturn("Bearer token")
+        Mockito.`when`(handshake.query()).thenReturn("")
+        Mockito.`when`(tokenService.findTokenDetailsDto("token")).thenReturn(null)
+
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            resolver.getAccountId()
+        }
+    }
+}
