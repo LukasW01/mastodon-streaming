@@ -9,13 +9,12 @@ RUN ./gradlew build -Dquarkus.native.enabled=true -Dquarkus.package.jar.enabled=
 
 # Stage 2: Quarkus micro image
 FROM quay.io/quarkus/quarkus-micro-image:2.0
-ARG PROJECT=mastodon
+ARG PROJECT=mastodon-streaming
 ARG VERSION=0.5.0
 ARG PORT=8080
 
-WORKDIR /app
-
 # Copy the Quarkus runner
+WORKDIR /app
 COPY --from=gradle "/app/build/*-runner" "/app/mastodon"
 
 RUN chown 1001 /app && chmod "g+rwX" /app && chown 1001:root /app

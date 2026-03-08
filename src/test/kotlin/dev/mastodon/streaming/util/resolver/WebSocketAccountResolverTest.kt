@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 
 @QuarkusTest
@@ -34,10 +34,10 @@ class WebSocketAccountResolverTest {
 
     @Test
     fun `should resolve token from Authorization header`() {
-        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
-        Mockito.`when`(handshake.header("Authorization")).thenReturn("Bearer bearer-token")
-        Mockito.`when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
-        Mockito.`when`(handshake.query()).thenReturn("")
+        `when`(ws.handshakeRequest()).thenReturn(handshake)
+        `when`(handshake.header("Authorization")).thenReturn("Bearer bearer-token")
+        `when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
+        `when`(handshake.query()).thenReturn("")
 
         val token = resolver.resolveToken()
         Assertions.assertEquals("bearer-token", token)
@@ -45,10 +45,10 @@ class WebSocketAccountResolverTest {
 
     @Test
     fun `should resolve token from Sec-WebSocket-Protocol header`() {
-        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
-        Mockito.`when`(handshake.header("Authorization")).thenReturn(null)
-        Mockito.`when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn("sec.websocket.protocol-token")
-        Mockito.`when`(handshake.query()).thenReturn("")
+        `when`(ws.handshakeRequest()).thenReturn(handshake)
+        `when`(handshake.header("Authorization")).thenReturn(null)
+        `when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn("sec.websocket.protocol-token")
+        `when`(handshake.query()).thenReturn("")
 
         val token = resolver.resolveToken()
         Assertions.assertEquals("sec.websocket.protocol-token", token)
@@ -56,10 +56,10 @@ class WebSocketAccountResolverTest {
 
     @Test
     fun `should resolve token from query parameter`() {
-        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
-        Mockito.`when`(handshake.header("Authorization")).thenReturn(null)
-        Mockito.`when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
-        Mockito.`when`(handshake.query()).thenReturn("access_token=query-token")
+        `when`(ws.handshakeRequest()).thenReturn(handshake)
+        `when`(handshake.header("Authorization")).thenReturn(null)
+        `when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
+        `when`(handshake.query()).thenReturn("access_token=query-token")
 
         val token = resolver.resolveToken()
         Assertions.assertEquals("query-token", token)
@@ -67,10 +67,10 @@ class WebSocketAccountResolverTest {
 
     @Test
     fun `should throw exception when no token exists`() {
-        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
-        Mockito.`when`(handshake.header("Authorization")).thenReturn(null)
-        Mockito.`when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
-        Mockito.`when`(handshake.query()).thenReturn("")
+        `when`(ws.handshakeRequest()).thenReturn(handshake)
+        `when`(handshake.header("Authorization")).thenReturn(null)
+        `when`(handshake.header("Sec-WebSocket-Protocol")).thenReturn(null)
+        `when`(handshake.query()).thenReturn("")
 
         Assertions.assertThrows(IllegalStateException::class.java) {
             resolver.resolveToken()
@@ -88,10 +88,10 @@ class WebSocketAccountResolverTest {
             permissions = 1
         )
 
-        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
-        Mockito.`when`(handshake.header("Authorization")).thenReturn("Bearer token")
-        Mockito.`when`(handshake.query()).thenReturn("")
-        Mockito.`when`(tokenService.findTokenDetailsDto("token")).thenReturn(accessToken)
+        `when`(ws.handshakeRequest()).thenReturn(handshake)
+        `when`(handshake.header("Authorization")).thenReturn("Bearer token")
+        `when`(handshake.query()).thenReturn("")
+        `when`(tokenService.findTokenDetailsDto("token")).thenReturn(accessToken)
 
         val result = resolver.getAccountId()
         Assertions.assertEquals(accessToken, result)
@@ -99,10 +99,10 @@ class WebSocketAccountResolverTest {
 
     @Test
     fun `getAccountId should throw when token service returns null`() {
-        Mockito.`when`(ws.handshakeRequest()).thenReturn(handshake)
-        Mockito.`when`(handshake.header("Authorization")).thenReturn("Bearer token")
-        Mockito.`when`(handshake.query()).thenReturn("")
-        Mockito.`when`(tokenService.findTokenDetailsDto("token")).thenReturn(null)
+        `when`(ws.handshakeRequest()).thenReturn(handshake)
+        `when`(handshake.header("Authorization")).thenReturn("Bearer token")
+        `when`(handshake.query()).thenReturn("")
+        `when`(tokenService.findTokenDetailsDto("token")).thenReturn(null)
 
         Assertions.assertThrows(IllegalStateException::class.java) {
             resolver.getAccountId()

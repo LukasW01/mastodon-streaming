@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 @QuarkusTest
 class InfoControllerTest {
-    private val infoController = InfoController()
+    val infoController = InfoController()
 
     @Test
     fun `test health check`() {
