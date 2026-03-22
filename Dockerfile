@@ -1,5 +1,5 @@
 # Stage 1: Build quarkus
-FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 AS gradle
+FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-25 AS gradle
 
 WORKDIR /app
 COPY . .
