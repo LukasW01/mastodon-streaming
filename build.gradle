@@ -32,7 +32,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-hibernate-orm-panache'
     implementation 'io.quarkus:quarkus-hibernate-validator'
     implementation 'io.quarkus:quarkus-hibernate-orm-panache-kotlin'
-    implementation 'io.quarkiverse.loggingsentry:quarkus-logging-sentry:2.3.0'
+    implementation 'io.quarkiverse.loggingsentry:quarkus-logging-sentry:2.3.1'
     implementation 'io.quarkiverse.bucket4j:quarkus-bucket4j:1.0.7'
     implementation 'io.quarkiverse.jdbc:quarkus-jdbc-sqlite4j:0.0.8'
     testImplementation 'io.quarkus:quarkus-junit'
