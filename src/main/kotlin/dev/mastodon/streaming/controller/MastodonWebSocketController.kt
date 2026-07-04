@@ -12,6 +12,7 @@ import io.quarkus.websockets.next.WebSocketConnection
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.context.control.ActivateRequestContext
 import jakarta.inject.Inject
+import kotlin.enums.enumEntries
 
 @ApplicationScoped
 @WebSocket(path = "/api/v1/streaming")
@@ -35,7 +36,7 @@ class MastodonWebSocketController {
     
     @OnTextMessage
     @ActivateRequestContext
-    fun onMessage(message: Subscribe): String = when (enumValues<ChannelName>().find { it.name == message.stream.uppercase() }) {
+    fun onMessage(message: Subscribe): String = when (enumEntries<ChannelName>().find { it.name == message.stream.uppercase() }) {
         else -> "Wrong channel!"
     }
 }
