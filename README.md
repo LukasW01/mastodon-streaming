@@ -6,7 +6,7 @@ A blazingly fast, memory-efficient drop-in replacement for the Mastodon streamin
 
 ### Prerequisites
 
-- [Java 21 (GraalVM)](https://www.graalvm.org/downloads/)
+- [Java 25 (GraalVM)](https://www.graalvm.org/downloads/)
 - [Gradle](https://gradle.org/install/)
 - [Docker](https://docs.docker.com/get-docker/)
 
