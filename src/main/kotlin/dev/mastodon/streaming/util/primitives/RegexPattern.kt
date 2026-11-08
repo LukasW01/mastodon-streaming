@@ -5,4 +5,5 @@ enum class RegexPattern(val regex: Regex) {
     STARTS_WITH_WORD_CHAR(Regex("""^\w""")),
     ENDS_WITH_WORD_CHAR(Regex("""\w$""")),
     BR_TAG(Regex("""<br\s*/?>""")),
+    ;
 }

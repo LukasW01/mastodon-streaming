@@ -2,13 +2,13 @@ package dev.mastodon.streaming.service
 
 import dev.mastodon.streaming.dto.ChannelResolution
 import dev.mastodon.streaming.dto.RedisMessage
+import dev.mastodon.streaming.prometheus.Metrics
 import dev.mastodon.streaming.util.ChannelName
 import dev.mastodon.streaming.util.session.StreamSession
 import dev.mastodon.streaming.util.session.Subscription
 import dev.mastodon.streaming.util.session.SubscriptionListener
 
 import com.fasterxml.jackson.databind.JsonNode
-import dev.mastodon.streaming.prometheus.Metrics
 import io.quarkus.logging.Log
 import io.quarkus.virtual.threads.VirtualThreads
 import jakarta.enterprise.context.ApplicationScoped

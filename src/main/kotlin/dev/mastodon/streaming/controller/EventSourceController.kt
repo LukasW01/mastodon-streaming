@@ -4,10 +4,11 @@ import dev.mastodon.streaming.dto.StreamParams
 import dev.mastodon.streaming.service.ChannelService
 import dev.mastodon.streaming.service.StreamService
 import dev.mastodon.streaming.util.ChannelName
-import dev.mastodon.streaming.util.session.EventSourceSession
 import dev.mastodon.streaming.util.mapper.WebApplicationMapperException
 import dev.mastodon.streaming.util.primitives.isTruthy
 import dev.mastodon.streaming.util.resolver.AccountResolver
+import dev.mastodon.streaming.util.session.EventSourceSession
+
 import io.smallrye.common.annotation.Blocking
 import io.smallrye.mutiny.Multi
 import io.vertx.core.Vertx
@@ -24,6 +25,7 @@ import jakarta.ws.rs.sse.OutboundSseEvent
 import jakarta.ws.rs.sse.Sse
 import org.jboss.resteasy.reactive.ResponseHeader
 import org.jboss.resteasy.reactive.RestPath
+
 import java.time.Duration
 
 /** Streams to clients over eventsource, the path decides which stream is requested. */
@@ -54,7 +56,7 @@ class EventSourceController {
     ): Multi<OutboundSseEvent> {
         // If no channelName can be found for the request, then we should terminate
         // the connection, as there's nothing to stream back
-        val channelName = ChannelName.fromPath(path, request.getParam("only_media").isTruthy()) 
+        val channelName = ChannelName.fromPath(path, request.getParam("only_media").isTruthy())
             ?: throw WebApplicationMapperException("Unknown channel requested", Response.Status.BAD_REQUEST.statusCode)
 
         val account = runCatching { accountResolver.accountFromRequest(request).checkScopes(channelName) }.getOrNull()

@@ -31,7 +31,8 @@ class ChannelService {
         name: ChannelName?,
         params: StreamParams
     ): ChannelResolution {
-        val channelName = name?.takeUnless { it == ChannelName.SYSTEM }  ?: throw WebApplicationMapperException("Unknown stream type", Response.Status.BAD_REQUEST.statusCode)
+        val channelName = name?.takeUnless { it == ChannelName.SYSTEM }
+            ?: throw WebApplicationMapperException("Unknown stream type", Response.Status.BAD_REQUEST.statusCode)
         val channelIds = channelIds(account, channelName, params)
 
         if (channelName.type.equals(null)) {
@@ -42,12 +43,15 @@ class ChannelService {
             return ChannelResolution(channelName, params, channelIds, needsFiltering = true)
         }
 
-        settingService.findByKind(channelName.type!!).filter { it.value == Filter.DISABLED }.map { it.variable }.let { disabled ->
-            return ChannelResolution(channelName, params, channelIds, needsFiltering = true).copy(
-                filterLocal = disabled.any { it.startsWith("local_") },
-                filterRemote = disabled.any { it.startsWith("remote_") },
-            )
-        }
+        settingService.findByKind(channelName.type!!)
+            .filter { it.value == Filter.disabled }
+            .map { it.variable }
+            .let { disabled ->
+                return ChannelResolution(channelName, params, channelIds, needsFiltering = true).copy(
+                    filterLocal = disabled.any { it.startsWith("local_") },
+                    filterRemote = disabled.any { it.startsWith("remote_") },
+                )
+            }
     }
     
     private fun channelIds(

@@ -1,6 +1,5 @@
 package dev.mastodon.streaming.util.resolver
 
-import dev.mastodon.streaming.dto.AccessToken
 import dev.mastodon.streaming.util.mapper.toErrorResponse
 import io.quarkus.logging.Log
 import io.quarkus.vertx.VertxContextSupport

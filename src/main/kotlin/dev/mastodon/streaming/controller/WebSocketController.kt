@@ -6,8 +6,8 @@ import dev.mastodon.streaming.dto.Subscribe
 import dev.mastodon.streaming.service.ChannelService
 import dev.mastodon.streaming.service.StreamService
 import dev.mastodon.streaming.util.ChannelName
-import dev.mastodon.streaming.util.session.WsSession
 import dev.mastodon.streaming.util.resolver.WebSocketHttpUpgradeAuth
+import dev.mastodon.streaming.util.session.WsSession
 
 import io.netty.handler.codec.http.QueryStringDecoder
 import io.quarkus.logging.Log
@@ -79,7 +79,8 @@ class WebSocketController {
      */
     @OnError
     fun onDecodeError(ws: WebSocketConnection, err: TextDecodeException) {
-        Log.info("Error parsing message from user ${ws.userData().get(UserData.TypedKey<WsSession>("session")).account.accountId}", err)
+        Log.error("Error parsing message from user ${ws.userData().get(UserData.TypedKey<WsSession>("session")).account
+            .accountId}", err)
     }
 
     private fun subscribeToChannel(
@@ -115,5 +116,4 @@ class WebSocketController {
             session.sendCustom(ErrorResponse("Error unsubscribing from channel"))
         }
     }
-
 }

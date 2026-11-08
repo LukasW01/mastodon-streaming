@@ -14,7 +14,6 @@ data class CachedFilter(
     val filterAction: String?,
     val regex: Regex,
 ) {
-
     fun isExpired(now: LocalDateTime): Boolean = expiresAt != null && expiresAt < now
 
     fun match(text: String): FilterResult? = regex.find(text)?.let { keywordMatch ->
@@ -36,7 +35,7 @@ data class CachedFilter(
                 title = keywords.first().phrase,
                 context = keywords.first().context,
                 expiresAt = keywords.first().expiresAt,
-                filterAction = Filter.TYPE.getOrNull(keywords.first().filterAction),
+                filterAction = Filter.type.getOrNull(keywords.first().filterAction),
                 regex = Regex(keywords.joinToString("|", transform = ::keywordExpression), RegexOption.IGNORE_CASE),
             )
         }
@@ -44,7 +43,9 @@ data class CachedFilter(
         private fun keywordExpression(row: FilterKeyword): String {
             val expr = row.keyword.replace(RegexPattern.SPECIAL_CHARS.regex) { """\${it.value}""" }
 
-            if (!row.wholeWord) return expr
+            if (!row.wholeWord) {
+                return expr
+            }
 
             val prefix = if (RegexPattern.STARTS_WITH_WORD_CHAR.regex.containsMatchIn(expr)) """\b""" else ""
             val suffix = if (RegexPattern.ENDS_WITH_WORD_CHAR.regex.containsMatchIn(expr)) """\b""" else ""

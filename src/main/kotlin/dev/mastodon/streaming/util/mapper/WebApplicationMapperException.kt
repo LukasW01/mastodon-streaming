@@ -1,16 +1,14 @@
 package dev.mastodon.streaming.util.mapper
 
 import dev.mastodon.streaming.dto.ErrorResponse
-import io.quarkus.logging.Log
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
-import org.jboss.logging.Logger
-import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 
 open class WebApplicationMapperException(message: String, val status: Int) : WebApplicationException(
     message,
-    Response.status(status).type(MediaType.APPLICATION_JSON).entity(ErrorResponse(message)).build(),
+    Response.status(status).type(MediaType.APPLICATION_JSON).entity(ErrorResponse(message))
+        .build(),
 )
 
 /**
