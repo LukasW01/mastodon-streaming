@@ -36,13 +36,13 @@ class CustomFilter : PanacheEntityBase() {
     @Column(name = "action")
     var action: Int? = null
 
+    @Column(name = "expires_at")
+    var expiresAt: LocalDateTime? = null
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = Account::class)
     @JoinColumn(name = "account_id")
     lateinit var account: Account
-
-    @Column(name = "expires_at")
-    lateinit var expiresAt: LocalDateTime
 
     @NotBlank
     @ColumnDefault("''")

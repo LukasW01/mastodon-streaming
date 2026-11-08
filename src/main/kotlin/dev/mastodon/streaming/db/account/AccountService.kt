@@ -8,5 +8,5 @@ class AccountService {
     @Inject
     private lateinit var accountDomainBlockRepository: AccountDomainBlockRepository
     
-    fun hasAccountDomainBlock(accountId: String, domain: String): Boolean = accountDomainBlockRepository.hasAccountDomainBlock(accountId, domain)
+    fun hasAccountDomainBlock(accountId: Long, domain: String): Boolean = accountDomainBlockRepository.hasAccountDomainBlock(accountId, domain)
 }

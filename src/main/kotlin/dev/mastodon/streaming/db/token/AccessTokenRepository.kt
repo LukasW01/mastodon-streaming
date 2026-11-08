@@ -8,7 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped
 class AccessTokenRepository : PanacheRepository<OauthAccessToken> {
     fun findTokenDetailsDto(token: String): AccessToken? = find(
         """
-            SELECT t.id, u.id, a.id, u.chosenLanguages, t.scopes, CAST(COALESCE(r.permissions, 0) AS integer)
+            SELECT t.id, u.id, a.id, u.chosenLanguages, t.scopes, COALESCE(r.permissions, 0L)
             FROM OauthAccessToken t
             JOIN t.resourceOwner u
             JOIN u.account a

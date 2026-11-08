@@ -8,6 +8,10 @@ class BlockService {
     @Inject
     private lateinit var blockRepository: BlockRepository
 
-    fun isBlockedOrMuted(accountId: Long, targetIds: List<Long>): Boolean =
-        blockRepository.isBlockedOrMuted(accountId, targetIds)
+    fun isBlockedOrMutedBidirectional(
+        viewerId: Long,
+        authorId: Long,
+        targetIds: List<Long>
+    ): Boolean =
+        blockRepository.isBlockedOrMutedBidirectional(viewerId, authorId, targetIds)
 }

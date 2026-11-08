@@ -11,7 +11,7 @@ RUN ./gradlew build -Dquarkus.native.enabled=true -Dquarkus.package.jar.enabled=
 FROM quay.io/quarkus/quarkus-micro-image:2.0
 ARG PROJECT=mastodon-streaming
 ARG VERSION=0.5.0
-ARG PORT=8080
+ARG PORT=4000
 
 # Copy the Quarkus runner
 WORKDIR /app
@@ -23,6 +23,7 @@ VOLUME ["/app/jwt"]
 EXPOSE $PORT
 USER 1001
 ENV QUARKUS_PROFILE=prod
+ENV BIND=0.0.0.0 PORT=$PORT
 
 # Run Quarkus app
 ENTRYPOINT ["/bin/sh", "-c"]

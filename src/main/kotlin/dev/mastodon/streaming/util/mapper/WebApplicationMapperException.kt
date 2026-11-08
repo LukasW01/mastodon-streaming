@@ -1,11 +1,23 @@
 package dev.mastodon.streaming.util.mapper
 
 import dev.mastodon.streaming.dto.ErrorResponse
+import io.quarkus.logging.Log
 import jakarta.ws.rs.WebApplicationException
+import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
+import org.jboss.logging.Logger
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 
-class WebApplicationMapperException(response: Response) : WebApplicationException(response) {
-    constructor(message: String, status: Int) : this(
-        Response.status(status).entity(ErrorResponse(message, status)).build(),
-    )
+open class WebApplicationMapperException(message: String, val status: Int) : WebApplicationException(
+    message,
+    Response.status(status).type(MediaType.APPLICATION_JSON).entity(ErrorResponse(message)).build(),
+)
+
+/**
+ * Extracts the status and message properties from the error object, if
+ * available for public use.
+ */
+fun Throwable.toErrorResponse(): ErrorResponse = when (this) {
+    is WebApplicationMapperException -> ErrorResponse(message.orEmpty(), status)
+    else -> ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR.reasonPhrase, Response.Status.INTERNAL_SERVER_ERROR.statusCode)
 }

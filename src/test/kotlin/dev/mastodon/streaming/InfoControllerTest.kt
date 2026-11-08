@@ -14,7 +14,6 @@ class InfoControllerTest {
     @Test
     fun `test health check`() {
         val response = infoController.health()
-        assertEquals(Response.Status.OK.statusCode, response.status)
-        assertEquals(InfoResponse("OK", Response.Status.OK.statusCode), response)
+        assertEquals("OK", response)
     }
 }

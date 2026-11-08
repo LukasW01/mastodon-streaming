@@ -5,30 +5,28 @@ import jakarta.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class BlockRepository : PanacheRepository<Block> {
-    fun isBlockedOrMuted(accountId: Long, targetIds: List<Long>): Boolean =
-        find(
+    // Checks viewer blocks/mutes targets AND whether the post author blocks the viewer.
+    fun isBlockedOrMutedBidirectional(
+        viewerId: Long,
+        authorId: Long,
+        targetIds: List<Long>
+    ): Boolean =
+        getEntityManager().createQuery(
             """
-        select
-            case when (
-                exists (
-                    select 1
-                    from Block b
-                    where b.account.id = ?1
-                    and b.targetAccount.id in ?2
-                )
-                or
-                exists (
-                    select 1
-                    from Mute m
-                    where m.account.id = ?1
-                    and m.targetAccount.id in ?2
-                )
-            ) then true else false end
-        from Block b
-        """,
-            accountId,
-            targetIds
+            select 1
+            from Block b
+            where (b.account.id = :viewerId and b.targetAccount.id in :targetIds)
+               or (b.account.id = :authorId and b.targetAccount.id = :viewerId)
+            union
+            select 1
+            from Mute m
+            where m.account.id = :viewerId
+            and m.targetAccount.id in :targetIds
+            """
         )
-            .project(Boolean::class.java)
-            .firstResult() ?: false
+            .setParameter("viewerId", viewerId)
+            .setParameter("authorId", authorId)
+            .setParameter("targetIds", targetIds)
+            .resultList
+            .isNotEmpty()
 }
