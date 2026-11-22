@@ -1,13 +1,14 @@
 package dev.mastodon.streaming.util.session
 
 import dev.mastodon.streaming.dto.AccessToken
-import dev.mastodon.streaming.dto.CachedFilter
 import dev.mastodon.streaming.dto.RedisMessage
+import dev.mastodon.streaming.dto.UserCustomFilter
 import dev.mastodon.streaming.util.ChannelName
+
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
-typealias CachedFilterMap = Map<Long, CachedFilter>?
+typealias CachedFilterMap = Map<Long, UserCustomFilter>?
 typealias CachedFilterMapRef = AtomicReference<CachedFilterMap>
 typealias SubscriptionListener = (RedisMessage) -> Unit
 
@@ -31,7 +32,6 @@ data class Subscription(
 abstract class StreamSession(val account: AccessToken, val type: ConnectionType) {
     /** The active subscriptions, by their channel ids joined with a `;`. */
     val subscriptions: MutableMap<String, Subscription> = ConcurrentHashMap()
-    val cachedFiltersRef: CachedFilterMapRef = AtomicReference(null)
 
     abstract fun send(
         streamName: List<String>,

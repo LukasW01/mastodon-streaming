@@ -4,11 +4,11 @@ import dev.mastodon.streaming.dto.ChannelResolution
 import dev.mastodon.streaming.dto.RedisMessage
 import dev.mastodon.streaming.prometheus.Metrics
 import dev.mastodon.streaming.util.ChannelName
+import dev.mastodon.streaming.util.Filter
 import dev.mastodon.streaming.util.session.StreamSession
 import dev.mastodon.streaming.util.session.Subscription
 import dev.mastodon.streaming.util.session.SubscriptionListener
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.quarkus.logging.Log
 import io.quarkus.virtual.threads.VirtualThreads
 import jakarta.enterprise.context.ApplicationScoped
@@ -17,7 +17,6 @@ import jakarta.inject.Inject
 import java.util.concurrent.ExecutorService
 
 private const val CHANNEL_IDS_SEPARATOR = ";"
-private val filteredEvents = listOf("update", "status.update")
 
 /** Connects the sessions of clients with the Redis channels they stream from. */
 @ApplicationScoped
@@ -69,9 +68,9 @@ class StreamService {
     }
 
     fun removeSubscription(session: StreamSession, channelIds: List<String>) {
-        Log.infof("Ending stream %s for account %s", channelIds, session.account.accountId)
-
         val subscription = session.subscriptions.remove(channelIds.joinToString(CHANNEL_IDS_SEPARATOR)) ?: return
+
+        Log.infof("Ending stream %s for account %s", channelIds, session.account.accountId)
 
         channelIds.forEach { channelId -> redisService.unsubscribe(channelId, subscription.listener) }
 
@@ -92,18 +91,12 @@ class StreamService {
     }
 
     private fun systemMessageListener(session: StreamSession): SubscriptionListener = { message ->
-        val accountId = session.account.accountId
-
-        Log.debugf("System message for %s: %s", accountId, message.event)
+        Log.debugf("System message for %s: %s", session.account.accountId, message.event)
 
         when (message.event) {
             "kill" -> {
-                Log.debugf("Closing connection for %s due to expired access token", accountId)
+                Log.debugf("Closing connection for %s due to expired access token", session.account.accountId)
                 session.close()
-            }
-            "filters_changed" -> {
-                Log.debugf("Invalidating filters cache for %s", accountId)
-                session.cachedFiltersRef.set(null)
             }
         }
     }
@@ -128,9 +121,8 @@ class StreamService {
     ) : SubscriptionListener {
         override fun invoke(message: RedisMessage) {
             val event = message.event
-            val payload = message.payload
 
-            if (event.isNullOrEmpty() || payload == null || payload.isNull) {
+            if (event.isNullOrEmpty() || message.payload == null || message.payload.isNull) {
                 return
             }
 
@@ -144,27 +136,22 @@ class StreamService {
             //
             // The channels that need filtering are determined in
             // `ChannelService.channelNameToIds`:
-            if (!resolution.needsFiltering || event !in filteredEvents) {
-                transmit(event, payload)
+            if (!resolution.needsFiltering || event !in Filter.events) {
+                transmit(event, message.encodedPayload)
                 return
             }
 
             // The filters need the database, which must not block the Redis connection:
-            executor.execute { filterAndTransmit(event, payload) }
+            executor.execute { filterAndTransmit(event, message) }
         }
 
-        private fun filterAndTransmit(event: String, payload: JsonNode) {
-            try {
-                statusFilterService.filter(session, resolution, payload)?.let { transmit(event, it) }
-            } catch (err: RuntimeException) {
-                Log.error("Error filtering message", err)
-            }
+        // Jackson's exceptions are checked ones, which `RuntimeException` would miss:
+        private fun filterAndTransmit(event: String, message: RedisMessage) {
+            runCatching { statusFilterService.filter(session, resolution, message)?.let { transmit(event, it) } }
+                .onFailure { err -> Log.error("Error filtering message", err) }
         }
 
-        private fun transmit(event: String, payload: JsonNode) {
-            // TODO: Replace "string"-based delete payloads with object payloads:
-            val encodedPayload = if (payload.isTextual) payload.textValue() else payload.toString()
-
+        private fun transmit(event: String, encodedPayload: String) {
             metrics.messagesSent(session.type).increment()
 
             Log.debugf("Transmitting %s to %s", event, session.account.accountId)

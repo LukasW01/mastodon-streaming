@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /** A custom filter of an account with all of its keywords compiled into a single regular expression. */
-data class CachedFilter(
+data class UserCustomFilter(
     val id: Long,
     val title: String,
     val context: List<String>,
@@ -29,8 +29,8 @@ data class CachedFilter(
          * to be done after grouping as the database returns one row per keyword,
          * so we need all the keywords before constructing the regular expression
          */
-        fun fromKeywords(rows: List<FilterKeyword>): Map<Long, CachedFilter> = rows.groupBy { it.id }.mapValues { (id, keywords) ->
-            CachedFilter(
+        fun fromKeywords(rows: List<FilterKeyword>): Map<Long, UserCustomFilter> = rows.groupBy { it.id }.mapValues { (id, keywords) ->
+            UserCustomFilter(
                 id = id,
                 title = keywords.first().phrase,
                 context = keywords.first().context,

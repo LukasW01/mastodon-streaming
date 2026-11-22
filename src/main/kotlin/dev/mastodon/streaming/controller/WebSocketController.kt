@@ -44,10 +44,9 @@ class WebSocketController {
 
             // Parse the URL for the connection arguments (if supplied)
             val query = QueryStringDecoder("?${ws.handshakeRequest().query().orEmpty()}").parameters()
-            val stream = query["stream"]?.firstOrNull()
-            if (!stream.isNullOrEmpty()) {
-                val params = StreamParams(tag = query["tag"]?.firstOrNull(), list = query["list"]?.firstOrNull())
-                subscribeToChannel(session, stream, params)
+            if (!query["stream"]?.firstOrNull().isNullOrEmpty()) {
+                subscribeToChannel(session, query["stream"]?.first(),
+                    StreamParams(tag = query["tag"]?.firstOrNull(), list = query["list"]?.firstOrNull()))
             }
         }
     }
@@ -63,11 +62,10 @@ class WebSocketController {
     fun onMessage(ws: WebSocketConnection, message: Subscribe) {
         val session = ws.userData().get(UserData.TypedKey<WsSession>("session"))
         val stream = message.stream?.firstOrNull()
-        val params = StreamParams(tag = message.tag, list = message.list)
 
         when (message.type) {
-            "subscribe" -> subscribeToChannel(session, stream, params)
-            "unsubscribe" -> unsubscribeFromChannel(session, stream, params)
+            "subscribe" -> subscribeToChannel(session, stream, StreamParams(tag = message.tag, list = message.list))
+            "unsubscribe" -> unsubscribeFromChannel(session, stream, StreamParams(tag = message.tag, list = message.list))
             // Unknown action type
             else -> Unit
         }

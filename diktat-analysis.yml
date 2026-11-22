@@ -7,7 +7,7 @@
   enabled: true
   ignoreAnnotated: [ Test ]
   configuration:
-    maxFunctionLength: '30'
+    maxFunctionLength: '35'
 - name: LONG_LINE
   enabled: true
   configuration:

@@ -6,7 +6,6 @@ import dev.mastodon.streaming.dto.AccessToken
 import dev.mastodon.streaming.dto.ChannelResolution
 import dev.mastodon.streaming.dto.StreamParams
 import dev.mastodon.streaming.util.ChannelName
-import dev.mastodon.streaming.util.Filter
 import dev.mastodon.streaming.util.Permissions
 import dev.mastodon.streaming.util.mapper.WebApplicationMapperException
 import dev.mastodon.streaming.util.primitives.normalizeHashtag
@@ -35,16 +34,14 @@ class ChannelService {
             ?: throw WebApplicationMapperException("Unknown stream type", Response.Status.BAD_REQUEST.statusCode)
         val channelIds = channelIds(account, channelName, params)
 
-        if (channelName.type.equals(null)) {
-            return ChannelResolution(channelName, params, channelIds, needsFiltering = false)
-        }
+        channelName.type ?: return ChannelResolution(channelName, params, channelIds, needsFiltering = false)
         
         if (account.permissions and Permissions.VIEW_FEEDS != 0L) {
             return ChannelResolution(channelName, params, channelIds, needsFiltering = true)
         }
 
-        settingService.findByKind(channelName.type!!)
-            .filter { it.value == Filter.disabled }
+        settingService.findByKind(channelName.type)
+            .filter { it.value?.contains(Regex("disabled")) == true }
             .map { it.variable }
             .let { disabled ->
                 return ChannelResolution(channelName, params, channelIds, needsFiltering = true).copy(
