@@ -1,12 +1,12 @@
 package dev.mastodon.streaming.controller
 
+import dev.mastodon.streaming.auth.WebSocketHttpUpgradeAuth
 import dev.mastodon.streaming.dto.ErrorResponse
 import dev.mastodon.streaming.dto.StreamParams
 import dev.mastodon.streaming.dto.Subscribe
 import dev.mastodon.streaming.service.ChannelService
 import dev.mastodon.streaming.service.StreamService
 import dev.mastodon.streaming.util.ChannelName
-import dev.mastodon.streaming.util.resolver.WebSocketHttpUpgradeAuth
 import dev.mastodon.streaming.util.session.WsSession
 
 import io.netty.handler.codec.http.QueryStringDecoder

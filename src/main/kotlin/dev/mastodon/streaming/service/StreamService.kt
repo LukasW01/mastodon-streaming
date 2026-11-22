@@ -8,6 +8,7 @@ import dev.mastodon.streaming.util.Filter
 import dev.mastodon.streaming.util.session.StreamSession
 import dev.mastodon.streaming.util.session.Subscription
 import dev.mastodon.streaming.util.session.SubscriptionListener
+import dev.mastodon.streaming.util.session.channelIds
 
 import io.quarkus.logging.Log
 import io.quarkus.virtual.threads.VirtualThreads
@@ -53,41 +54,42 @@ class StreamService {
     }
 
     fun subscribeToChannel(session: StreamSession, resolution: ChannelResolution) {
-        val key = resolution.channelIds.joinToString(CHANNEL_IDS_SEPARATOR)
+        resolution.channelIds.joinToString(CHANNEL_IDS_SEPARATOR).let { key ->
+            if (key in session.subscriptions) {
+                return
+            }
 
-        if (key in session.subscriptions) {
-            return
+            metrics.connectedChannels(session.type, resolution.channelName).incrementAndGet()
+
+            session.subscriptions[key] = Subscription(
+                resolution.channelName,
+                streamFrom(session, resolution),
+                redisService.subscriptionHeartbeat(resolution.channelIds)
+            )
         }
-
-        val stopHeartbeat = redisService.subscriptionHeartbeat(resolution.channelIds)
-        val listener = streamFrom(session, resolution)
-
-        metrics.connectedChannels(session.type, resolution.channelName).incrementAndGet()
-
-        session.subscriptions[key] = Subscription(resolution.channelName, listener, stopHeartbeat)
     }
 
     fun removeSubscription(session: StreamSession, channelIds: List<String>) {
-        val subscription = session.subscriptions.remove(channelIds.joinToString(CHANNEL_IDS_SEPARATOR)) ?: return
-
         Log.infof("Ending stream %s for account %s", channelIds, session.account.accountId)
 
-        channelIds.forEach { channelId -> redisService.unsubscribe(channelId, subscription.listener) }
+        session.subscriptions.remove(channelIds.joinToString(CHANNEL_IDS_SEPARATOR))?.let { subscription ->
+            channelIds.forEach { channelId -> redisService.unsubscribe(channelId, subscription.listener) }
 
-        metrics.connectedChannels(session.type, subscription.channelName).decrementAndGet()
-        subscription.stopHeartbeat()
+            metrics.connectedChannels(session.type, subscription.channelName).decrementAndGet()
+
+            subscription.stopHeartbeat()
+        }
     }
 
     private fun subscribeToSystemChannel(session: StreamSession) {
-        val channelIds = listOf("timeline:access_token:${session.account.tokenId}", "timeline:system:${session.account.accountId}")
-        val listener = systemMessageListener(session)
+        systemMessageListener(session).let { listener ->
+            session.channelIds().forEach { channelId ->
+                redisService.subscribe(channelId, listener)
+                session.subscriptions[channelId] = Subscription(ChannelName.SYSTEM, listener) { }
+            }
 
-        channelIds.forEach { channelId ->
-            redisService.subscribe(channelId, listener)
-            session.subscriptions[channelId] = Subscription(ChannelName.SYSTEM, listener) { }
+            metrics.connectedChannels(session.type, ChannelName.SYSTEM).addAndGet(session.channelIds().size.toLong())
         }
-
-        metrics.connectedChannels(session.type, ChannelName.SYSTEM).addAndGet(channelIds.size.toLong())
     }
 
     private fun systemMessageListener(session: StreamSession): SubscriptionListener = { message ->
@@ -103,12 +105,11 @@ class StreamService {
 
     private fun streamFrom(session: StreamSession, resolution: ChannelResolution): SubscriptionListener {
         Log.infof("Starting stream %s for account %s", resolution.channelIds, session.account.accountId)
+        StreamListener(session, resolution).let { listener ->
+            resolution.channelIds.forEach { id -> redisService.subscribe(id, listener) }
 
-        val listener = StreamListener(session, resolution)
-
-        resolution.channelIds.forEach { id -> redisService.subscribe(id, listener) }
-
-        return listener
+            return listener
+        }
     }
 
     /**
@@ -120,9 +121,7 @@ class StreamService {
         private val resolution: ChannelResolution,
     ) : SubscriptionListener {
         override fun invoke(message: RedisMessage) {
-            val event = message.event
-
-            if (event.isNullOrEmpty() || message.payload == null || message.payload.isNull) {
+            if (message.event.isNullOrEmpty() || message.payload == null || message.payload.isNull) {
                 return
             }
 
@@ -136,16 +135,15 @@ class StreamService {
             //
             // The channels that need filtering are determined in
             // `ChannelService.channelNameToIds`:
-            if (!resolution.needsFiltering || event !in Filter.events) {
-                transmit(event, message.encodedPayload)
+            if (!resolution.needsFiltering || message.event !in Filter.events) {
+                transmit(message.event, message.encodedPayload)
                 return
             }
 
             // The filters need the database, which must not block the Redis connection:
-            executor.execute { filterAndTransmit(event, message) }
+            executor.execute { filterAndTransmit(message.event, message) }
         }
 
-        // Jackson's exceptions are checked ones, which `RuntimeException` would miss:
         private fun filterAndTransmit(event: String, message: RedisMessage) {
             runCatching { statusFilterService.filter(session, resolution, message)?.let { transmit(event, it) } }
                 .onFailure { err -> Log.error("Error filtering message", err) }

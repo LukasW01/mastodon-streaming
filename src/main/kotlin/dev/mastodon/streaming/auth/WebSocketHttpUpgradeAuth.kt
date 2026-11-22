@@ -1,6 +1,7 @@
-package dev.mastodon.streaming.util.resolver
+package dev.mastodon.streaming.auth
 
 import dev.mastodon.streaming.util.mapper.toErrorResponse
+import dev.mastodon.streaming.util.resolver.AccountResolver
 import io.quarkus.logging.Log
 import io.quarkus.vertx.VertxContextSupport
 import io.quarkus.websockets.next.HttpUpgradeCheck

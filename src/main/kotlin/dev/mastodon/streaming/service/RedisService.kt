@@ -1,9 +1,9 @@
 package dev.mastodon.streaming.service
 
 import dev.mastodon.streaming.dto.RedisMessage
+import dev.mastodon.streaming.util.Units
 import dev.mastodon.streaming.util.session.SubscriptionListener
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.quarkus.logging.Log
 import io.quarkus.redis.datasource.ReactiveRedisDataSource
 import io.quarkus.runtime.StartupEvent
@@ -16,11 +16,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty
 import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
-
-private const val HEARTBEAT_EXPIRY_FACTOR = 3
-private const val HEARTBEAT_INTERVAL_SECONDS = 30L
-private const val RECONNECT_MAX_BACKOFF_SECONDS = 30L
-private const val RECONNECT_DELAY_SECONDS = 1L
 
 private typealias Listeners = MutableSet<SubscriptionListener>
 
@@ -35,9 +30,6 @@ private typealias Listeners = MutableSet<SubscriptionListener>
 @ApplicationScoped
 class RedisService {
     private val subs: ConcurrentHashMap<String, Listeners> = ConcurrentHashMap()
-
-    @Inject
-    private lateinit var objectMapper: ObjectMapper
 
     @Inject
     private lateinit var redisDataSource: ReactiveRedisDataSource
@@ -59,7 +51,7 @@ class RedisService {
             .invoke { err -> Log.error("Redis Client Error!", err) }
             .onFailure()
             .retry()
-            .withBackOff(Duration.ofSeconds(RECONNECT_DELAY_SECONDS), Duration.ofSeconds(RECONNECT_MAX_BACKOFF_SECONDS))
+            .withBackOff(Duration.ofSeconds(Units.RECONNECT_DELAY_SECONDS), Duration.ofSeconds(Units.RECONNECT_MAX_BACKOFF_SECONDS))
             .indefinitely()
             .subscribe()
             .with({ Log.info("Subscribed to Redis") }) { err -> Log.error("Redis Client Error!", err) }
@@ -119,14 +111,14 @@ class RedisService {
     fun subscriptionHeartbeat(channels: List<String>): () -> Unit {
         sendHeartbeat(channels)
 
-        vertx.setPeriodic(Duration.ofSeconds(HEARTBEAT_INTERVAL_SECONDS).toMillis()) { sendHeartbeat(channels) }.let { heartbeat ->
+        vertx.setPeriodic(Duration.ofSeconds(Units.HEARTBEAT_INTERVAL_SECONDS).toMillis()) { sendHeartbeat(channels) }.let { heartbeat ->
             return { vertx.cancelTimer(heartbeat) }
         }
     }
 
     private fun sendHeartbeat(channels: List<String>) = channels.forEach { channel ->
         redisDataSource.value(String::class.java)
-            .setex(redisNamespaced("subscribed:$channel"), Duration.ofSeconds(HEARTBEAT_INTERVAL_SECONDS).seconds * HEARTBEAT_EXPIRY_FACTOR, "1")
+            .setex(redisNamespaced("subscribed:$channel"), Duration.ofSeconds(Units.HEARTBEAT_INTERVAL_SECONDS).seconds * Units.HEARTBEAT_EXPIRY_FACTOR, "1")
             .subscribe()
             .with({ }) { err -> Log.error("Error sending heartbeat for $channel", err) }
     }
