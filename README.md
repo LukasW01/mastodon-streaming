@@ -30,13 +30,13 @@ The server is configured via environment variables. For local development, see a
 
 ### Required
 
-| Variable            | Description                                                                            |
-|---------------------|----------------------------------------------------------------------------------------|
-| `QUARKUS_PROFILE` | Configuration profile: `prod`, `dev` or `test`     |      | 
-| `POSTGRES_USER`     | PostgreSQL user                                                                        |
-| `POSTGRES_PASSWORD` | PostgreSQL password                                                                    |
-| `POSTGRES_JDBC_URL` | Full JDBC URL, e.g. `jdbc:postgresql://localhost:5432/mastodon_production`<sup>1</sup> |
-| `REDIS_URL`         | Full Redis URL, e.g. `redis://localhost:6379/0`<sup>2</sup>                            |
+| Variable            | Description                                                                            | Example |
+|---------------------|---------------------------------------------------|-------------------------------------|
+| `QUARKUS_PROFILE` | Configuration profile: `prod`, `dev` or `test`     | |
+| `POSTGRES_JDBC_URL` | Full JDBC URL<sup>1</sup> | `jdbc:postgresql://localhost:5432/mastodon_production`|
+| `POSTGRES_USER`     | PostgreSQL user                                                                        | `mastodon`|
+| `POSTGRES_PASSWORD` | PostgreSQL password                                                                    | |
+| `REDIS_URL`         | Full Redis URL<sup>2</sup>                            | `redis://localhost:6379/0`|
 
 <sup>1</sup> Alternatively, leave `POSTGRES_JDBC_URL` unset and set `POSTGRES_HOST` and `POSTGRES_DB` (plus optionally `POSTGRES_PORT`).
 `POSTGRES_JDBC_URL` takes precedence if both are set.
