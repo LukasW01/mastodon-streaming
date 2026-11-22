@@ -32,6 +32,7 @@ The server is configured via environment variables. For local development, see a
 
 | Variable            | Description                                                                            |
 |---------------------|----------------------------------------------------------------------------------------|
+| `QUARKUS_PROFILE` | Configuration profile: `prod`, `dev` or `test`     |      | 
 | `POSTGRES_USER`     | PostgreSQL user                                                                        |
 | `POSTGRES_PASSWORD` | PostgreSQL password                                                                    |
 | `POSTGRES_JDBC_URL` | Full JDBC URL, e.g. `jdbc:postgresql://localhost:5432/mastodon_production`<sup>1</sup> |
@@ -47,7 +48,6 @@ The server is configured via environment variables. For local development, see a
 
 | Variable          | Default     | Description                                                                         |
 |-------------------|-------------|-------------------------------------------------------------------------------------|
-| `QUARKUS_PROFILE` | `prod`      | Configuration profile: `prod`, `dev` or `test` (`gradle quarkusDev` uses `dev`)     |
 | `BIND`            | `127.0.0.1` | Address the HTTP server binds to (`0.0.0.0` in the Docker image)                    |
 | `PORT`            | `4000`      | Port the HTTP server listens on                                                     |
 | `LOG_LEVEL`       | `INFO`      | Root log level (the `dev` profile additionally logs the application at `DEBUG`)     |
