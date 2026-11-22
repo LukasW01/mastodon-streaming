@@ -8,5 +8,5 @@ class ListService {
     @Inject
     private lateinit var listRepository: ListRepository
 
-    fun findByListIdAndAccountId(id: Long, accountId: Long): List? = listRepository.findByListIdAndAccountId(id, accountId)
+    fun isOwnedBy(id: Long, accountId: Long): Boolean = listRepository.isOwnedBy(id, accountId)
 }

@@ -25,13 +25,12 @@ class Setting : PanacheEntityBase() {
     @Column(name = "id")
     var id: Long = 0
 
+    @Column(name = "value", length = Integer.MAX_VALUE)
+    var value: String? = null
+
     @NotBlank
     @Column(name = "var", length = Integer.MAX_VALUE)
     lateinit var variable: String
-
-    @NotBlank
-    @Column(name = "value", length = Integer.MAX_VALUE)
-    lateinit var value: String
 
     @Column(name = "created_at")
     lateinit var createdAt: LocalDateTime

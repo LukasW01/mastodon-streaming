@@ -5,5 +5,5 @@ import jakarta.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class AccountDomainBlockRepository : PanacheRepository<AccountDomainBlock> {
-    fun hasAccountDomainBlock(accountId: String, domain: String): Boolean = count("account.id = ?1 and domain = ?2", accountId, domain) > 0
+    fun hasAccountDomainBlock(accountId: Long, domain: String): Boolean = count("account.id = ?1 and domain = ?2", accountId, domain) > 0
 }

@@ -24,6 +24,9 @@ gradle:test:
   script: gradle test
   variables:
     QUARKUS_PROFILE: test
+    REDIS_URL: redis://redis:6379
+  services:
+    - redis:alpine
   artifacts:
     when: always
     reports:

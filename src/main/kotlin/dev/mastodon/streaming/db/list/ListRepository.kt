@@ -5,5 +5,5 @@ import jakarta.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class ListRepository : PanacheRepository<List> {
-    fun findByListIdAndAccountId(id: Long, accountId: Long): List? = find("id = ?1 and account.id = ?2", id, accountId).firstResult()
+    fun isOwnedBy(id: Long, accountId: Long): Boolean = count("id = ?1 and account.id = ?2", id, accountId) > 0
 }
