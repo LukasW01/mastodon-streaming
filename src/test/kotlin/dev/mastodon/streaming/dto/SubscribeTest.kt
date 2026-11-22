@@ -1,12 +1,12 @@
 package dev.mastodon.streaming.dto
 
-import dev.mastodon.streaming.jsonMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class SubscribeTest {
-    private val objectMapper = jsonMapper()
+    private val objectMapper = ObjectMapper().findAndRegisterModules()
 
     @Test
     fun `stream can be sent as a string`() {

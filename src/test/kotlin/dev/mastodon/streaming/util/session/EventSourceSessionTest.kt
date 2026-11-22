@@ -27,6 +27,7 @@ class EventSourceSessionTest {
         session.send(listOf("public"), "update", """{"id":"1"}""")
 
         val event = argumentCaptor<OutboundSseEvent>().apply { verify(emitter).emit(capture()) }.firstValue
+
         assertEquals("update", event.name)
         assertEquals("""{"id":"1"}""", event.data)
     }
@@ -36,6 +37,7 @@ class EventSourceSessionTest {
         session.sendComment("thump")
 
         val event = argumentCaptor<OutboundSseEvent>().apply { verify(emitter).emit(capture()) }.firstValue
+
         assertEquals("thump", event.comment)
         assertNull(event.name)
     }

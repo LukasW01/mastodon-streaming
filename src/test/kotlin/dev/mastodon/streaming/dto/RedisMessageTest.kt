@@ -1,13 +1,13 @@
 package dev.mastodon.streaming.dto
 
-import dev.mastodon.streaming.jsonMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import com.fasterxml.jackson.databind.node.TextNode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class RedisMessageTest {
-    private val objectMapper = jsonMapper()
+    private val objectMapper = ObjectMapper().findAndRegisterModules()
 
     @Test
     fun `object payloads are encoded as json`() {

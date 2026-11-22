@@ -1,12 +1,12 @@
 package dev.mastodon.streaming.dto
 
-import dev.mastodon.streaming.jsonMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class FilteredStatusTest {
-    private val objectMapper = jsonMapper()
+    private val objectMapper = ObjectMapper().findAndRegisterModules()
 
     @Test
     fun `the status is serialized with its filter results`() {

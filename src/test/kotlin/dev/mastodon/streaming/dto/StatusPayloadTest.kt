@@ -1,6 +1,6 @@
 package dev.mastodon.streaming.dto
 
-import dev.mastodon.streaming.jsonMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class StatusPayloadTest {
-    private val objectMapper = jsonMapper()
+    private val objectMapper = ObjectMapper().findAndRegisterModules()
     private val local = StatusPayload(account = StatusPayload.Account(id = 2, username = "alice", acct = "alice"))
     private val remote = StatusPayload(account = StatusPayload.Account(id = 3, username = "bob", acct = "bob@remote.example"))
 

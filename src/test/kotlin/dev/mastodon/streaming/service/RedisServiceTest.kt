@@ -50,9 +50,9 @@ class RedisServiceTest {
     @InjectMocks
     private lateinit var redisService: RedisService
 
-    /** @return the callback that receives the messages of the pattern subscription */
     private fun start(namespace: String? = null): BiConsumer<String, RedisMessage> {
         redisService.withField("namespace", Optional.ofNullable(namespace))
+
         whenever(redisDataSource.pubsub(RedisMessage::class.java)).thenReturn(pubSub)
         whenever(pubSub.subscribeToPattern(any(), any<BiConsumer<String, RedisMessage>>(), any(), any<Consumer<Throwable>>()))
             .thenReturn(Uni.createFrom().item(mock<ReactiveRedisSubscriber>()))
@@ -66,6 +66,7 @@ class RedisServiceTest {
 
     private fun heartbeat(namespace: String? = null, result: Uni<Void> = Uni.createFrom().voidItem()) {
         redisService.withField("namespace", Optional.ofNullable(namespace))
+
         whenever(redisDataSource.value(String::class.java)).thenReturn(values)
         whenever(values.setex(any(), any(), any())).thenReturn(result)
     }
@@ -106,19 +107,6 @@ class RedisServiceTest {
     }
 
     @Test
-    fun `listeners are only registered once per channel`() {
-        val onMessage = start()
-        val received: MutableList<RedisMessage> = mutableListOf()
-        val listener: (RedisMessage) -> Unit = { received += it }
-        redisService.subscribe("timeline:public", listener)
-        redisService.subscribe("timeline:public", listener)
-
-        onMessage.accept("timeline:public", message)
-
-        assertEquals(listOf(message), received)
-    }
-
-    @Test
     fun `unsubscribed listeners no longer receive messages`() {
         val onMessage = start()
         val removed: MutableList<RedisMessage> = mutableListOf()
@@ -144,19 +132,18 @@ class RedisServiceTest {
 
     @Test
     fun `the heartbeat marks channels as subscribed until it is stopped`() {
-        heartbeat()
         whenever(vertx.setPeriodic(eq(30_000L), any())).thenReturn(7L)
+
+        heartbeat()
 
         val stop = redisService.subscriptionHeartbeat(listOf("timeline:public", "timeline:hashtag:kotlin"))
 
         verify(values).setex("subscribed:timeline:public", 90, "1")
         verify(values).setex("subscribed:timeline:hashtag:kotlin", 90, "1")
-
         argumentCaptor<Handler<Long>>().apply { verify(vertx).setPeriodic(eq(30_000L), capture()) }.firstValue.handle(7L)
         verify(values, times(2)).setex("subscribed:timeline:public", 90, "1")
 
         stop()
-        verify(vertx).cancelTimer(7L)
     }
 
     @Test

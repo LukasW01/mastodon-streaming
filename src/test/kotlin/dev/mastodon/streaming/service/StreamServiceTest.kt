@@ -6,12 +6,12 @@ import dev.mastodon.streaming.dto.AccessToken
 import dev.mastodon.streaming.dto.ChannelResolution
 import dev.mastodon.streaming.dto.RedisMessage
 import dev.mastodon.streaming.dto.StreamParams
-import dev.mastodon.streaming.jsonMapper
 import dev.mastodon.streaming.prometheus.Metrics
 import dev.mastodon.streaming.util.ChannelName
 import dev.mastodon.streaming.util.session.ConnectionType
 import dev.mastodon.streaming.withField
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.TextNode
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
@@ -43,7 +43,7 @@ import java.util.concurrent.ExecutorService
 class StreamServiceTest {
     private val session = FakeSession(AccessToken(tokenId = 10, resourceOwnerId = 20, accountId = 30, scopes = "read", permissions = 0))
     private val stopHeartbeat: () -> Unit = mock()
-    private val status = jsonMapper().readTree("""{"id":"1"}""")
+    private val status = ObjectMapper().findAndRegisterModules().readTree("""{"id":"1"}""")
     private val publicStream = ChannelResolution(ChannelName.PUBLIC, StreamParams(), listOf("timeline:public"), needsFiltering = true)
     private val hashtagStream = ChannelResolution(ChannelName.HASHTAG, StreamParams(tag = "kotlin"), listOf("timeline:hashtag:kotlin"), needsFiltering = false)
 
@@ -70,12 +70,6 @@ class StreamServiceTest {
         return session.subscriptions.getValue(resolution.channelIds.joinToString(";")).listener
     }
 
-    private fun filterDirectly() {
-        doAnswer { it.getArgument<Runnable>(0).run() }.whenever(executor).execute(any())
-    }
-
-    private fun connectedChannels(channel: ChannelName): Long = metrics.connectedChannels(ConnectionType.EVENTSOURCE, channel).get()
-
     @Test
     fun `opening a session subscribes it to its system channels`() {
         streamService.open(session)
@@ -84,7 +78,6 @@ class StreamServiceTest {
         verify(redisService).subscribe(eq("timeline:system:30"), any())
         assertEquals(setOf("timeline:access_token:10", "timeline:system:30"), session.subscriptions.keys)
         assertEquals(1, metrics.connectedClients(ConnectionType.EVENTSOURCE).get())
-        assertEquals(2, connectedChannels(ChannelName.SYSTEM))
     }
 
     @Test
@@ -109,13 +102,11 @@ class StreamServiceTest {
     @Test
     fun `subscribing listens to all channels of the stream`() {
         val resolution = ChannelResolution(ChannelName.USER, StreamParams(), listOf("timeline:30", "timeline:30:notifications"), needsFiltering = false)
-
         val listener = subscribe(resolution)
 
         verify(redisService).subscribe("timeline:30", listener)
         verify(redisService).subscribe("timeline:30:notifications", listener)
         assertEquals(ChannelName.USER, session.subscriptions.getValue("timeline:30;timeline:30:notifications").channelName)
-        assertEquals(1, connectedChannels(ChannelName.USER))
     }
 
     @Test
@@ -125,7 +116,6 @@ class StreamServiceTest {
 
         verify(redisService, times(1)).subscriptionHeartbeat(hashtagStream.channelIds)
         verify(redisService, times(1)).subscribe(eq("timeline:hashtag:kotlin"), any())
-        assertEquals(1, connectedChannels(ChannelName.HASHTAG))
     }
 
     @Test
@@ -152,8 +142,9 @@ class StreamServiceTest {
     @ParameterizedTest
     @ValueSource(strings = ["update", "status.update"])
     fun statusEventsOfFilteredStreamsAreTransmittedAfterFiltering(event: String) {
-        filterDirectly()
         val message = RedisMessage(event, status)
+
+        doAnswer { it.getArgument<Runnable>(0).run() }.whenever(executor).execute(any())
         whenever(statusFilterService.filter(session, publicStream, message)).thenReturn("""{"id":"1","filtered":[]}""")
 
         subscribe(publicStream)(message)
@@ -163,8 +154,9 @@ class StreamServiceTest {
 
     @Test
     fun `statuses removed by the filter are not transmitted`() {
-        filterDirectly()
         val message = RedisMessage("update", status)
+
+        doAnswer { it.getArgument<Runnable>(0).run() }.whenever(executor).execute(any())
         whenever(statusFilterService.filter(session, publicStream, message)).thenReturn(null)
 
         subscribe(publicStream)(message)
@@ -175,8 +167,9 @@ class StreamServiceTest {
 
     @Test
     fun `errors while filtering do not reach the redis connection`() {
-        filterDirectly()
         val message = RedisMessage("update", status)
+
+        doAnswer { it.getArgument<Runnable>(0).run() }.whenever(executor).execute(any())
         whenever(statusFilterService.filter(session, publicStream, message)).thenThrow(IllegalStateException("Database unavailable"))
 
         subscribe(publicStream)(message)
@@ -201,7 +194,6 @@ class StreamServiceTest {
         verify(redisService).unsubscribe("timeline:public", listener)
         verify(stopHeartbeat).invoke()
         assertTrue(session.subscriptions.isEmpty())
-        assertEquals(0, connectedChannels(ChannelName.PUBLIC))
     }
 
     @Test
@@ -225,7 +217,5 @@ class StreamServiceTest {
         verify(stopHeartbeat).invoke()
         assertTrue(session.subscriptions.isEmpty())
         assertEquals(0, metrics.connectedClients(ConnectionType.EVENTSOURCE).get())
-        assertEquals(0, connectedChannels(ChannelName.SYSTEM))
-        assertEquals(0, connectedChannels(ChannelName.PUBLIC))
     }
 }

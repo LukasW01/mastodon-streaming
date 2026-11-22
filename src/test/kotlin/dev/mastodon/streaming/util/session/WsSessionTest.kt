@@ -26,6 +26,7 @@ class WsSessionTest {
     @Test
     fun `messages are sent with their stream name and event`() {
         val message = StreamMessage(listOf("hashtag", "kotlin"), "update", """{"id":"1"}""")
+
         whenever(ws.isOpen).thenReturn(true)
         whenever(ws.sendText(message)).thenReturn(Uni.createFrom().voidItem())
 
