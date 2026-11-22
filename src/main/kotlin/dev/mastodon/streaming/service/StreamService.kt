@@ -105,6 +105,7 @@ class StreamService {
 
     private fun streamFrom(session: StreamSession, resolution: ChannelResolution): SubscriptionListener {
         Log.infof("Starting stream %s for account %s", resolution.channelIds, session.account.accountId)
+
         StreamListener(session, resolution).let { listener ->
             resolution.channelIds.forEach { id -> redisService.subscribe(id, listener) }
 
