@@ -41,6 +41,7 @@ dependencies {
     testImplementation 'io.quarkus:quarkus-junit'
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'io.quarkus:quarkus-junit-mockito'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:6.4.0'
 }
 
 allOpen {

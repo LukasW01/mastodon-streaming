@@ -1,6 +1,5 @@
-package dev.mastodon.streaming
+package dev.mastodon.streaming.controller
 
-import dev.mastodon.streaming.controller.InfoController
 import io.quarkus.test.junit.QuarkusTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
